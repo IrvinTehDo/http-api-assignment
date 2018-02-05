@@ -6,7 +6,71 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+    const parseJSON = (xhr, content) => {
+        const obj = JSON.parse(xhr.response);
+        return obj;
+    };
+    
+    const handleResponse = (xhr) => {
+        const content = document.querySelector('#content');
+        const dataType = xhr.getResponseHeader("Content-Type");
+        
+        const h1 = document.createElement('h1');
+        const p = document.createElement('p');
+        
+        console.dir(dataType);
+        
+        if(dataType === "application/json"){
+            const response = JSON.parse(xhr.response);
+            console.log(response);
+            
+            h1.textContent = response.id;
+            p.textContent = response.message;
+            
+        }
+        
+        else if(dataType === "text/xml"){
+            const id = xhr.responseXML.querySelector('id');
+            console.log(xhr.responseXML);
+            
+            if(id){
+                h1.textContent = id.textContent;
+            }
+            p.textContent = xhr.responseXML.querySelector('message').textContent;
+        }
+        
+        content.innerHTML = "";
+        content.appendChild(h1);
+        content.appendChild(p);
+                                         
+    };
 
+    const sendPost = (e, form) => {
+        const page = form.querySelector('#page');
+        const type = form.querySelector('#type');
+        
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', page.value);
+        xhr.setRequestHeader('Accept', type.value);
+        
+        xhr.onload = () => handleResponse(xhr);
+        
+        xhr.send();
+        
+        e.preventDefault();
+        return false;
+        
+    };
+
+    const init = () => {
+        const form = document.querySelector('#top');
+        const requestPage = (e) => sendPost(e, form);
+        
+        document.querySelector('#send').addEventListener('click', requestPage);
+        
+    };
+
+    window.onload = init;
   </script>
 </head>
 <body>
